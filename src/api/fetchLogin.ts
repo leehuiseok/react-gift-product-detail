@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { API_BASE } from '@/constant/constant';
+import { useMutation } from '@tanstack/react-query';
 
 export async function fetchLogin(email: string, password: string) {
   try {
@@ -13,4 +14,11 @@ export async function fetchLogin(email: string, password: string) {
     }
     throw new Error('로그인에 실패했습니다.');
   }
+}
+
+export function useLoginMutation() {
+  return useMutation({
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      fetchLogin(email, password),
+  });
 }
