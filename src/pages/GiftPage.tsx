@@ -5,7 +5,7 @@ import { CategoryGrid } from '@/components/CategoryGrid/CategoryGrid';
 import { Banner } from '@/components/Banner/Banner';
 import { FriendSelector } from '@/components/FriendSelector/FriendSelector';
 import { RankingSection } from '@/components/RankingSection/RankingSection';
-import { useFetchThemes } from '@/api/fetchThemes';
+import { useFetchThemes } from '@/hooks/useFetchThemes';
 import { useNavigate } from 'react-router';
 
 const AppContainer = styled.div`

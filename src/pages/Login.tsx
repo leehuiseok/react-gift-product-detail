@@ -6,7 +6,7 @@ import { ROUTE_PATH } from '@/shared/RoutePath';
 import { useLoginForm } from '@/hooks/useLoginForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
-import { useLoginMutation } from '@/api/fetchLogin';
+import { useLoginMutation } from '@/hooks/useLoginMutation';
 import { AxiosError } from 'axios';
 
 const AppContainer = styled.div`

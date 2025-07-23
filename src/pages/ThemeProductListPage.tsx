@@ -3,10 +3,10 @@ import styled from '@emotion/styled';
 import { colors, spacing } from '@/styles/tokens';
 import { Header } from '@/components/Header/Header';
 import { useParams, useNavigate } from 'react-router';
-import { useFetchThemeInfo } from '@/api/fetchThemeInfo';
+import { useFetchThemeInfo } from '@/hooks/useFetchThemeInfo';
 import { typography } from '@/styles/tokens';
 import { Loading } from '@/components/common/Loading';
-import { useFetchThemeProduct } from '@/api/fetchThemeProduct';
+import { useFetchThemeProduct } from '@/hooks/useFetchThemeProduct';
 import { ProductCard } from '@/components/common/ProductCard';
 
 const AppContainer = styled.div`

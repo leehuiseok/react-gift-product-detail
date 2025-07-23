@@ -14,8 +14,8 @@ import { colors } from '@/styles/tokens';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/contexts/AuthContext';
 import { type OrderRequest } from '@/api/fetchOrder';
-import { useFetchProductSummary } from '@/api/fetchProductSummary';
-import { useOrderMutation } from '@/api/fetchOrder';
+import { useFetchProductSummary } from '@/hooks/useFetchProductSummary';
+import { useOrderMutation } from '@/hooks/useOrderMutation';
 import { AxiosError } from 'axios';
 
 const Container = styled.div`

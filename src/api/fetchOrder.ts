@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { API_BASE } from '@/constant/constant';
-import { useMutation } from '@tanstack/react-query';
 
 export interface Receiver {
   name: string;
@@ -24,11 +23,4 @@ export async function fetchOrder(orderData: OrderRequest, authToken: string) {
     },
   });
   return data;
-}
-
-export function useOrderMutation() {
-  return useMutation({
-    mutationFn: ({ orderData, authToken }: { orderData: OrderRequest; authToken: string }) =>
-      fetchOrder(orderData, authToken),
-  });
 }

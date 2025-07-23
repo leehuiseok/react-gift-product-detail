@@ -11,7 +11,7 @@ import { useSearchParams } from 'react-router';
 import { ROUTE_PATH } from '@/shared/RoutePath';
 import { useNavigate } from 'react-router';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRanking } from '@/api/fetchRanking';
+import { useRanking } from '@/hooks/useRanking';
 
 const RankingHeader = styled.h2`
   font-size: 18px;
