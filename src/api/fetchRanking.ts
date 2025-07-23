@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
 import { type Product } from '@/types';
 import axios from 'axios';
 import { API_BASE } from '@/constant/constant';
+import { useQuery } from '@tanstack/react-query';
 
 // API 호출 함수 (내부에서만 사용)
 async function fetchRanking(targetType: string, rankType: string): Promise<Product[]> {
@@ -13,18 +13,10 @@ async function fetchRanking(targetType: string, rankType: string): Promise<Produ
 
 // 커스텀 훅
 export function useRanking(targetType: string, rankType: string) {
-  const [ranking, setRanking] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['ranking', targetType, rankType],
+    queryFn: () => fetchRanking(targetType, rankType),
+  });
 
-  useEffect(() => {
-    setLoading(true);
-    setError(false);
-    fetchRanking(targetType, rankType)
-      .then(setRanking)
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, [targetType, rankType]);
-
-  return { ranking, loading, error };
+  return { data, isLoading, error };
 }

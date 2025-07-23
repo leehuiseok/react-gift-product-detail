@@ -47,7 +47,7 @@ export const RankingSection = () => {
   const [activeFilter, setActiveFilter] = useState<FilterId>(
     isValidFilterId(filterParam) ? filterParam : 'MANY_WISH',
   );
-  const { ranking, loading, error } = useRanking(activeTab, activeFilter);
+  const { data: ranking, isLoading: loading, error } = useRanking(activeTab, activeFilter);
   const [isExpanded, setIsExpanded] = useState(false);
   const itemsPerPage = 6;
 
@@ -78,7 +78,7 @@ export const RankingSection = () => {
       navigate(ROUTE_PATH.LOGIN);
     }
   };
-  const displayedProducts = isExpanded ? ranking : ranking.slice(0, itemsPerPage);
+  const displayedProducts = isExpanded ? (ranking ?? []) : (ranking ?? []).slice(0, itemsPerPage);
   const buttonText = isExpanded ? '접기' : '더보기';
 
   if (loading) return <Loading />;
