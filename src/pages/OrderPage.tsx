@@ -11,14 +11,11 @@ import { RecipientModal } from '@/components/RecipientInput/RecipientModal';
 import { RecipientList } from '@/components/RecipientInput/RecipientList';
 import { orderFormSchema, type OrderFormData, type RecipientData } from '@/schemas/orderSchema';
 import { colors } from '@/styles/tokens';
-import { fetchProductSummary } from '@/api/fetchProductSummary';
 import { toast } from 'react-toastify';
-import type { Product } from '@/types';
-import { useNavigate } from 'react-router';
-import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchOrder, type OrderRequest } from '@/api/fetchOrder';
 import { AxiosError } from 'axios';
+import { useFetchProductSummary } from '@/api/fetchProductSummary';
 
 const Container = styled.div`
   max-width: 720px;
@@ -252,20 +249,8 @@ export const OrderPage: React.FC = () => {
   const { user } = useAuth();
   const successModal = useModal();
   const selectedCardData = cardData.find((card) => card.id === selectedCard);
-  const navigate = useNavigate();
-  const [product, setProduct] = useState<Product | null>(null);
-  useEffect(() => {
-    if (productId) {
-      fetchProductSummary(productId.toString())
-        .then(setProduct)
-        .catch((error) => {
-          if (error.response && error.response.status >= 400 && error.response.status < 500) {
-            toast.error('상품 정보를 불러올 수 없습니다.');
-            navigate('/');
-          }
-        });
-    }
-  }, [productId, navigate]);
+  const { data: productSummary } = useFetchProductSummary(productId?.toString() || '');
+
   const {
     register,
     handleSubmit,
@@ -307,10 +292,10 @@ export const OrderPage: React.FC = () => {
 
   // 폼 제출
   const onSubmit = async (data: OrderFormData) => {
-    if (!product || !user) return;
+    if (!productSummary || !user) return;
 
     const orderData: OrderRequest = {
-      productId: product.id,
+      productId: productSummary.id,
       message: data.message,
       messageCardId: selectedCardData?.id + '', // string 변환
       ordererName: data.senderName,
@@ -403,15 +388,17 @@ export const OrderPage: React.FC = () => {
             <ProductItem>
               <ProductImage>
                 <img
-                  src={product?.imageURL}
-                  alt={product?.name}
+                  src={productSummary?.imageURL}
+                  alt={productSummary?.name}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }}
                 />
               </ProductImage>
               <ProductDetails>
-                <h3>{product?.name}</h3>
-                <ProductBrand>{product?.brandInfo.name}</ProductBrand>
-                <ProductPrice>상품가 {product?.price.sellingPrice.toLocaleString()}원</ProductPrice>
+                <h3>{productSummary?.name}</h3>
+                <ProductBrand>{productSummary?.brandInfo.name}</ProductBrand>
+                <ProductPrice>
+                  상품가 {productSummary?.price.sellingPrice.toLocaleString()}원
+                </ProductPrice>
               </ProductDetails>
             </ProductItem>
           </ProductInfo>
@@ -429,9 +416,9 @@ export const OrderPage: React.FC = () => {
       <SuccessModal showSuccessModal={successModal.isOpen} onClose={successModal.closeModal} />
 
       <OrderButton form="order-form" type="submit" disabled={recipients.length === 0}>
-        {product?.price.sellingPrice
+        {productSummary?.price.sellingPrice
           ? (
-              product.price.sellingPrice * recipients.reduce((sum, r) => sum + r.quantity, 0)
+              productSummary.price.sellingPrice * recipients.reduce((sum, r) => sum + r.quantity, 0)
             ).toLocaleString()
           : '0'}
         원 주문하기
