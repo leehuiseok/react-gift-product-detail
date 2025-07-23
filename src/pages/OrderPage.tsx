@@ -13,9 +13,10 @@ import { orderFormSchema, type OrderFormData, type RecipientData } from '@/schem
 import { colors } from '@/styles/tokens';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchOrder, type OrderRequest } from '@/api/fetchOrder';
-import { AxiosError } from 'axios';
+import { type OrderRequest } from '@/api/fetchOrder';
 import { useFetchProductSummary } from '@/api/fetchProductSummary';
+import { useOrderMutation } from '@/api/fetchOrder';
+import { AxiosError } from 'axios';
 
 const Container = styled.div`
   max-width: 720px;
@@ -290,8 +291,9 @@ export const OrderPage: React.FC = () => {
     setValue('recipients', newRecipients);
   };
 
+  const orderMutation = useOrderMutation();
   // 폼 제출
-  const onSubmit = async (data: OrderFormData) => {
+  const orderSubmit = async (data: OrderFormData) => {
     if (!productSummary || !user) return;
 
     const orderData: OrderRequest = {
@@ -306,19 +308,24 @@ export const OrderPage: React.FC = () => {
       })),
     };
 
-    try {
-      await fetchOrder(orderData, user.authToken);
-      successModal.openModal();
-    } catch (error) {
-      const err = error as AxiosError<{ message: string }>;
-      if (err?.response?.status === 401) {
-        toast.error('로그인이 필요합니다.');
-      } else if (err?.response?.status === 400) {
-        toast.error(err.response.data?.message || '주문 요청이 올바르지 않습니다.');
-      } else {
-        toast.error('주문에 실패했습니다. 다시 시도해주세요.');
-      }
-    }
+    orderMutation.mutate(
+      { orderData, authToken: user.authToken },
+      {
+        onSuccess: () => {
+          successModal.openModal();
+        },
+        onError: (error) => {
+          const err = error as AxiosError<{ message?: string }>;
+          if (err?.response?.status === 401) {
+            toast.error('로그인이 필요합니다.');
+          } else if (err?.response?.status === 400) {
+            toast.error(err.response.data?.message || '주문 요청이 올바르지 않습니다.');
+          } else {
+            toast.error('주문에 실패했습니다. 다시 시도해주세요.');
+          }
+        },
+      },
+    );
   };
 
   return (
@@ -354,7 +361,7 @@ export const OrderPage: React.FC = () => {
         </MainCharacter>
       </CharacterSection>
 
-      <form onSubmit={handleSubmit(onSubmit)} id="order-form">
+      <form onSubmit={handleSubmit(orderSubmit)} id="order-form">
         <FormSection>
           <FormGroup>
             <FormLabel>메시지</FormLabel>
