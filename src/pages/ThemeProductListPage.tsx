@@ -71,19 +71,10 @@ export const ThemeProductListPage = () => {
   const navigate = useNavigate();
 
   // React Query 기반 훅 사용
-  const {
-    data: themeInfo,
-    isLoading: themeInfoLoading,
-    error: themeInfoError,
-  } = useFetchThemeInfo(themeId || '');
-  const {
-    data,
-    isLoading: themeProductLoading,
-    isError: themeProductError,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useFetchThemeProduct(themeId || '');
+  const { data: themeInfo, error: themeInfoError } = useFetchThemeInfo(themeId || '');
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useFetchThemeProduct(
+    themeId || '',
+  );
 
   // 무한 스크롤 IntersectionObserver
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -121,8 +112,6 @@ export const ThemeProductListPage = () => {
   return (
     <AppContainer>
       <Header title="선물하기" />
-      {themeInfoLoading && <Loading />}
-      {themeInfoError && <div>테마 정보 불러오기 실패</div>}
       {themeInfo && (
         <ThemeInfoContainer backgroundColor={themeInfo.backgroundColor || ''}>
           <ThemeInfoName>{themeInfo.name}</ThemeInfoName>
@@ -131,11 +120,7 @@ export const ThemeProductListPage = () => {
         </ThemeInfoContainer>
       )}
       <ProductListContainer>
-        {themeProductLoading && products.length === 0 ? (
-          <Loading />
-        ) : themeProductError ? (
-          <div>테마 제품 불러오기 실패</div>
-        ) : products.length === 0 ? (
+        {products.length === 0 ? (
           <EmptyState>
             <div>상품이 없습니다</div>
           </EmptyState>
