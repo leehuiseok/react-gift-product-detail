@@ -69,7 +69,11 @@ const EmptyState = styled.div`
 export const ThemeProductListPage = () => {
   const { themeId } = useParams();
   const navigate = useNavigate();
-  const { themeInfo, loading, error, is404Error } = useFetchThemeInfo(themeId || '');
+  const {
+    data: themeInfo,
+    isLoading: themeInfoLoading,
+    error: themeInfoError,
+  } = useFetchThemeInfo(themeId || '');
   const {
     themeProduct,
     loading: themeProductLoading,
@@ -108,21 +112,18 @@ export const ThemeProductListPage = () => {
     };
   }, [handleObserver]);
 
-  // 404 에러 처리
   useEffect(() => {
-    if (is404Error) {
+    if (themeInfoError) {
       navigate('/');
     }
-  }, [is404Error, navigate]);
+  }, [themeInfoError, navigate]);
 
   return (
     <AppContainer>
       <Header title="선물하기" />
-      {loading ? (
-        <Loading />
-      ) : error ? (
-        <div>테마 정보 불러오기 실패</div>
-      ) : (
+      {themeInfoLoading && <Loading />}
+      {themeInfoError && <div>테마 정보 불러오기 실패</div>}
+      {themeInfo && (
         <ThemeInfoContainer backgroundColor={themeInfo?.backgroundColor || ''}>
           <ThemeInfoName>{themeInfo?.name}</ThemeInfoName>
           <ThemeInfoTitle>{themeInfo?.title}</ThemeInfoTitle>
