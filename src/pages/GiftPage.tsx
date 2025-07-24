@@ -5,8 +5,7 @@ import { CategoryGrid } from '@/components/CategoryGrid/CategoryGrid';
 import { Banner } from '@/components/Banner/Banner';
 import { FriendSelector } from '@/components/FriendSelector/FriendSelector';
 import { RankingSection } from '@/components/RankingSection/RankingSection';
-import { useFetchThemes } from '@/api/fetchThemes';
-import { Loading } from '@/components/common/Loading';
+import { useFetchThemes } from '@/hooks/useFetchThemes';
 import { useNavigate } from 'react-router';
 
 const AppContainer = styled.div`
@@ -17,18 +16,14 @@ const AppContainer = styled.div`
 `;
 
 export const GiftPage = () => {
-  const { themes, themesLoading, themesError } = useFetchThemes();
+  const { data: themes } = useFetchThemes();
   const navigate = useNavigate();
 
   return (
     <AppContainer>
       <Header title="선물하기" />
       <FriendSelector onClick={() => console.log('선물할 친구 선택')} />
-      {themesLoading ? (
-        <Loading />
-      ) : themesError && themes.length === 0 ? (
-        <div>테마 불러오기 실패</div>
-      ) : (
+      {themes && (
         <CategoryGrid
           categories={themes}
           onCategoryClick={(category) => navigate(`/theme/${category.themeId}`)}

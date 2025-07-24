@@ -1,12 +1,12 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { colors, spacing } from '@/styles/tokens';
 import { Header } from '@/components/Header/Header';
 import { useParams, useNavigate } from 'react-router';
-import { useFetchThemeInfo } from '@/api/fetchThemeInfo';
+import { useFetchThemeInfo } from '@/hooks/useFetchThemeInfo';
 import { typography } from '@/styles/tokens';
 import { Loading } from '@/components/common/Loading';
-import { useFetchThemeProduct } from '@/api/fetchThemeProduct';
+import { useFetchThemeProduct } from '@/hooks/useFetchThemeProduct';
 import { ProductCard } from '@/components/common/ProductCard';
 
 const AppContainer = styled.div`
@@ -69,82 +69,68 @@ const EmptyState = styled.div`
 export const ThemeProductListPage = () => {
   const { themeId } = useParams();
   const navigate = useNavigate();
-  const { themeInfo, loading, error, is404Error } = useFetchThemeInfo(themeId || '');
-  const {
-    themeProduct,
-    loading: themeProductLoading,
-    error: themeProductError,
-    hasMoreList,
-    loadMore,
-  } = useFetchThemeProduct(themeId || '');
 
+  // React Query 기반 훅 사용
+  const { data: themeInfo, error: themeInfoError } = useFetchThemeInfo(themeId || '');
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useFetchThemeProduct(
+    themeId || '',
+  );
+
+  // 무한 스크롤 IntersectionObserver
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries;
-      if (target.isIntersecting && hasMoreList && !themeProductLoading) {
-        loadMore();
-      }
-    },
-    [hasMoreList, themeProductLoading, loadMore],
-  );
-
   useEffect(() => {
+    if (!hasNextPage) return;
     const element = loadMoreRef.current;
     if (!element) return;
 
-    observerRef.current = new IntersectionObserver(handleObserver, {
-      threshold: 0.1,
-    });
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
 
     observerRef.current.observe(element);
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
+      if (observerRef.current) observerRef.current.disconnect();
     };
-  }, [handleObserver]);
+  }, [fetchNextPage, hasNextPage]);
 
-  // 404 에러 처리
   useEffect(() => {
-    if (is404Error) {
+    if (themeInfoError) {
       navigate('/');
     }
-  }, [is404Error, navigate]);
+  }, [themeInfoError, navigate]);
+
+  const products = data?.pages.flatMap((page) => page.list) ?? [];
 
   return (
     <AppContainer>
       <Header title="선물하기" />
-      {loading ? (
-        <Loading />
-      ) : error ? (
-        <div>테마 정보 불러오기 실패</div>
-      ) : (
-        <ThemeInfoContainer backgroundColor={themeInfo?.backgroundColor || ''}>
-          <ThemeInfoName>{themeInfo?.name}</ThemeInfoName>
-          <ThemeInfoTitle>{themeInfo?.title}</ThemeInfoTitle>
-          <ThemeInfoDescription>{themeInfo?.description}</ThemeInfoDescription>
+      {themeInfo && (
+        <ThemeInfoContainer backgroundColor={themeInfo.backgroundColor || ''}>
+          <ThemeInfoName>{themeInfo.name}</ThemeInfoName>
+          <ThemeInfoTitle>{themeInfo.title}</ThemeInfoTitle>
+          <ThemeInfoDescription>{themeInfo.description}</ThemeInfoDescription>
         </ThemeInfoContainer>
       )}
       <ProductListContainer>
-        {themeProductLoading && themeProduct.length === 0 ? (
-          <Loading />
-        ) : themeProductError ? (
-          <div>테마 제품 불러오기 실패</div>
-        ) : themeProduct.length === 0 ? (
+        {products.length === 0 ? (
           <EmptyState>
             <div>상품이 없습니다</div>
           </EmptyState>
         ) : (
           <>
-            {themeProduct.map((product) => (
+            {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
             <LoadMoreTrigger ref={loadMoreRef}>
-              {themeProductLoading && hasMoreList && <Loading />}
+              {isFetchingNextPage && hasNextPage && <Loading />}
             </LoadMoreTrigger>
           </>
         )}

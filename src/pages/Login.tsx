@@ -6,7 +6,7 @@ import { ROUTE_PATH } from '@/shared/RoutePath';
 import { useLoginForm } from '@/hooks/useLoginForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-toastify';
-import { fetchLogin } from '@/api/fetchLogin';
+import { useLoginMutation } from '@/hooks/useLoginMutation';
 import { AxiosError } from 'axios';
 
 const AppContainer = styled.div`
@@ -119,6 +119,8 @@ export const Login: React.FC = () => {
     isValid,
   } = useLoginForm();
 
+  const { mutate } = useLoginMutation();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -126,25 +128,24 @@ export const Login: React.FC = () => {
       toast.error('카카오 이메일(@kakao.com)만 사용 가능합니다.');
       return;
     }
-    if (password.length < 8) {
-      toast.error('비밀번호는 8자 이상이어야 합니다.');
-      return;
-    }
 
-    try {
-      const res = await fetchLogin(email, password); // { email, name, authToken }
-
-      login({
-        email: res.email,
-        name: res.name,
-        authToken: res.authToken,
-      });
-
-      navigate(from, { replace: true });
-    } catch (error) {
-      const err = error as AxiosError<{ message: string }>;
-      toast.error(err.message || '로그인에 실패했습니다.');
-    }
+    mutate(
+      { email, password },
+      {
+        onSuccess: (res) => {
+          login({
+            email: res.email,
+            name: res.name,
+            authToken: res.authToken,
+          });
+          navigate(from, { replace: true });
+        },
+        onError: (error: unknown) => {
+          const err = error as AxiosError<{ message: string }>;
+          toast.error(err.response?.data.message || '로그인에 실패했습니다.');
+        },
+      },
+    );
   };
 
   return (

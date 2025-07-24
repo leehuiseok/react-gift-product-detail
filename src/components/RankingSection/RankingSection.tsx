@@ -11,8 +11,7 @@ import { useSearchParams } from 'react-router';
 import { ROUTE_PATH } from '@/shared/RoutePath';
 import { useNavigate } from 'react-router';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRanking } from '@/api/fetchRanking';
-import { Loading } from '@/components/common/Loading';
+import { useRanking } from '@/hooks/useRanking';
 
 const RankingHeader = styled.h2`
   font-size: 18px;
@@ -47,7 +46,7 @@ export const RankingSection = () => {
   const [activeFilter, setActiveFilter] = useState<FilterId>(
     isValidFilterId(filterParam) ? filterParam : 'MANY_WISH',
   );
-  const { ranking, loading, error } = useRanking(activeTab, activeFilter);
+  const { data: ranking } = useRanking(activeTab, activeFilter);
   const [isExpanded, setIsExpanded] = useState(false);
   const itemsPerPage = 6;
 
@@ -78,11 +77,8 @@ export const RankingSection = () => {
       navigate(ROUTE_PATH.LOGIN);
     }
   };
-  const displayedProducts = isExpanded ? ranking : ranking.slice(0, itemsPerPage);
+  const displayedProducts = isExpanded ? (ranking ?? []) : (ranking ?? []).slice(0, itemsPerPage);
   const buttonText = isExpanded ? '접기' : '더보기';
-
-  if (loading) return <Loading />;
-  if (error) return <div>랭킹 불러오기 실패</div>;
 
   return (
     <>
