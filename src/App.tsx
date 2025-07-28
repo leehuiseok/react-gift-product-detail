@@ -1,15 +1,14 @@
 import { Router } from '@/shared/Router';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastContainer } from 'react-toastify';
-import { ErrorBoundary } from 'react-error-boundary';
 import { Suspense } from 'react';
 import { Loading } from '@/components/common/Loading';
-import { Error } from '@/components/common/Error';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 function App() {
   return (
     <AuthProvider>
-      <ErrorBoundary FallbackComponent={Error}>
+      <ErrorBoundary customMessage="에러가 발생했습니다.">
         <Suspense fallback={<Loading />}>
           <Router />
         </Suspense>
