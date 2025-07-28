@@ -72,7 +72,7 @@ export const RankingSection = () => {
 
   const handleProductClick = (productId: string) => {
     if (user) {
-      navigate(`${ROUTE_PATH.ORDER}?productId=${productId}`);
+      navigate(`/product/${productId}`);
     } else {
       navigate(ROUTE_PATH.LOGIN);
     }
