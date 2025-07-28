@@ -5,5 +5,7 @@ export function useFetchProductSummary(productId: string) {
   return useQuery({
     queryKey: ['productSummary', productId],
     queryFn: () => fetchProductSummary(productId),
+    enabled: !!productId,
+    retry: false,
   });
 }

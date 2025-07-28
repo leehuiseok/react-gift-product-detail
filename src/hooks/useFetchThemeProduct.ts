@@ -7,5 +7,6 @@ export const useFetchThemeProduct = (themeId: string) => {
     queryFn: ({ pageParam = 0 }) => fetchThemeProduct(themeId, pageParam, 10),
     getNextPageParam: (lastPage) => (lastPage.hasMoreList ? lastPage.cursor : undefined),
     initialPageParam: 0,
+    enabled: !!themeId,
   });
 };
