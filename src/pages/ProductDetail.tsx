@@ -7,6 +7,7 @@ import { ProductActionBar } from '@/components/ProductActionBar/ProductActionBar
 import { useProductDetail } from '@/hooks/useProductDetail';
 import { useProductHighlightReview } from '@/hooks/useProductHighlightReview';
 import { Product } from '@/components/common/Product';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 const Container = styled.div`
   max-width: 720px;
   margin: 0 auto;
@@ -96,17 +97,25 @@ export const ProductDetail = () => {
     <Container>
       <Header title="선물하기" />
 
-      <Product />
+      <ErrorBoundary customMessage="상품 정보를 불러오는 중 오류가 발생했습니다.">
+        <Product />
+      </ErrorBoundary>
       <TabContainer>
-        <Tab active={activeTab === 'description'} onClick={() => setActiveTab('description')}>
-          상품설명
-        </Tab>
-        <Tab active={activeTab === 'review'} onClick={() => setActiveTab('review')}>
-          선물후기
-        </Tab>
-        <Tab active={activeTab === 'detail'} onClick={() => setActiveTab('detail')}>
-          상세정보
-        </Tab>
+        <ErrorBoundary customMessage="상품 설명을 불러오는 중 오류가 발생했습니다.">
+          <Tab active={activeTab === 'description'} onClick={() => setActiveTab('description')}>
+            상품설명
+          </Tab>
+        </ErrorBoundary>
+        <ErrorBoundary customMessage="선물후기를 불러오는 중 오류가 발생했습니다.">
+          <Tab active={activeTab === 'review'} onClick={() => setActiveTab('review')}>
+            선물후기
+          </Tab>
+        </ErrorBoundary>
+        <ErrorBoundary customMessage="상세정보를 불러오는 중 오류가 발생했습니다.">
+          <Tab active={activeTab === 'detail'} onClick={() => setActiveTab('detail')}>
+            상세정보
+          </Tab>
+        </ErrorBoundary>
       </TabContainer>
 
       <TabContent>
