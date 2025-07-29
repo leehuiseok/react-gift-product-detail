@@ -24,18 +24,22 @@ export function useProductWish(productId: string) {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ['productWish', productId] });
 
-      queryClient.setQueryData(['productWish', productId], (old: ProductWish | undefined) => {
-        if (!old) return old;
+      const previousWish = queryClient.setQueryData(
+        ['productWish', productId],
+        (old: ProductWish | undefined) => {
+          if (!old) return old;
 
-        const newIsWished = !old.isWished;
-        const newWishCount = newIsWished ? old.wishCount + 1 : old.wishCount - 1;
+          const newIsWished = !old.isWished;
+          const newWishCount = newIsWished ? old.wishCount + 1 : old.wishCount - 1;
 
-        return {
-          ...old,
-          isWished: newIsWished,
-          wishCount: newWishCount,
-        };
-      });
+          return {
+            ...old,
+            isWished: newIsWished,
+            wishCount: newWishCount,
+          };
+        },
+      );
+      return { previousWish };
     },
     onSuccess: () => {
       const currentData = queryClient.getQueryData(['productWish', productId]) as ProductWish;
@@ -45,7 +49,12 @@ export function useProductWish(productId: string) {
         toast.success('찜 목록에서 제거되었습니다.');
       }
     },
-    onError: () => {},
+    onError: (context: { previousWish: ProductWish } | undefined) => {
+      if (context?.previousWish) {
+        queryClient.setQueryData(['productWish', productId], context.previousWish);
+      }
+      toast.error('찜 상태 변경에 실패했습니다. 다시 시도해 주세요.');
+    },
   });
 
   const handleToggleWish = () => {
