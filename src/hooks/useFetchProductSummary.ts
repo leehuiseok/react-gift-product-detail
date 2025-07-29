@@ -1,11 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { fetchProductSummary } from '@/api/fetchProductSummary';
 
 export function useFetchProductSummary(productId: string) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ['productSummary', productId],
     queryFn: () => fetchProductSummary(productId),
-    enabled: !!productId,
     retry: false,
   });
 }
