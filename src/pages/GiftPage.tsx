@@ -7,6 +7,9 @@ import { FriendSelector } from '@/components/FriendSelector/FriendSelector';
 import { RankingSection } from '@/components/RankingSection/RankingSection';
 import { useFetchThemes } from '@/hooks/useFetchThemes';
 import { useNavigate } from 'react-router';
+import { Suspense } from 'react';
+import { Loading } from '@/components/common/Loading';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 const AppContainer = styled.div`
   max-width: 720px;
@@ -23,17 +26,25 @@ export const GiftPage = () => {
     <AppContainer>
       <Header title="선물하기" />
       <FriendSelector onClick={() => console.log('선물할 친구 선택')} />
-      {themes && (
-        <CategoryGrid
-          categories={themes}
-          onCategoryClick={(category) => navigate(`/theme/${category.themeId}`)}
-        />
-      )}
+      <ErrorBoundary customMessage="테마를 불러오는 중 오류가 발생했습니다.">
+        <Suspense fallback={<Loading />}>
+          {themes && (
+            <CategoryGrid
+              categories={themes}
+              onCategoryClick={(category) => navigate(`/theme/${category.themeId}`)}
+            />
+          )}
+        </Suspense>
+      </ErrorBoundary>
       <Banner
         text="카카오테크 캠퍼스 3기 여러분 프로트엔드 2단계 과제 화이팅! 🎉"
         onClick={() => console.log('Banner 클릭')}
       />
-      <RankingSection />
+      <ErrorBoundary customMessage="랭킹을 불러오는 중 오류가 발생했습니다.">
+        <Suspense fallback={<Loading />}>
+          <RankingSection />
+        </Suspense>
+      </ErrorBoundary>
     </AppContainer>
   );
 };

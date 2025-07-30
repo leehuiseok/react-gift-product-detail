@@ -69,7 +69,6 @@ const EmptyState = styled.div`
 export const ThemeProductListPage = () => {
   const { themeId } = useParams();
   const navigate = useNavigate();
-
   // React Query 기반 훅 사용
   const { data: themeInfo, error: themeInfoError } = useFetchThemeInfo(themeId || '');
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage } = useFetchThemeProduct(
@@ -127,7 +126,11 @@ export const ThemeProductListPage = () => {
         ) : (
           <>
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard
+                onClick={() => navigate(`/product/${product.id}`)}
+                key={product.id}
+                product={product}
+              />
             ))}
             <LoadMoreTrigger ref={loadMoreRef}>
               {isFetchingNextPage && hasNextPage && <Loading />}

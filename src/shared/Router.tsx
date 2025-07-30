@@ -7,6 +7,7 @@ import { MyPage } from '@/pages/MyPage';
 import { OrderPage } from '@/pages/OrderPage';
 import { PrivateRoute } from './PrivateRoute';
 import { ThemeProductListPage } from '@/pages/ThemeProductListPage';
+import { ProductDetail } from '@/pages/ProductDetail';
 
 export const Router = () => {
   return (
@@ -16,6 +17,14 @@ export const Router = () => {
         <Route path={ROUTE_PATH.LOGIN} element={<Login />} />
         <Route path={ROUTE_PATH.NOT_FOUND} element={<NotFound />} />
         <Route path={ROUTE_PATH.THEME_PRODUCT_LIST} element={<ThemeProductListPage />} />
+        <Route
+          path={ROUTE_PATH.PRODUCT_DETAIL}
+          element={
+            <PrivateRoute>
+              <ProductDetail />
+            </PrivateRoute>
+          }
+        />
         <Route
           path={ROUTE_PATH.MY_PAGE}
           element={

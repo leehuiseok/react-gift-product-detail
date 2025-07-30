@@ -72,12 +72,12 @@ export const RankingSection = () => {
 
   const handleProductClick = (productId: string) => {
     if (user) {
-      navigate(`${ROUTE_PATH.ORDER}?productId=${productId}`);
+      navigate(`/product/${productId}`);
     } else {
       navigate(ROUTE_PATH.LOGIN);
     }
   };
-  const displayedProducts = isExpanded ? (ranking ?? []) : (ranking ?? []).slice(0, itemsPerPage);
+  const displayedProducts = isExpanded ? ranking || [] : (ranking || []).slice(0, itemsPerPage);
   const buttonText = isExpanded ? '접기' : '더보기';
 
   return (

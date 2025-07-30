@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { fetchRanking } from '@/api/fetchRanking';
 
 export function useRanking(targetType: string, rankType: string) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ['ranking', targetType, rankType],
     queryFn: () => fetchRanking(targetType, rankType),
   });
