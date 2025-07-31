@@ -101,18 +101,28 @@ export const ProductDetail = () => {
       <TabContent>
         <ErrorBoundary customMessage="상품 설명을 불러오는 중 오류가 발생했습니다.">
           {activeTab === 'description' && (
-            <div>
-              <DescriptionContainer
-                dangerouslySetInnerHTML={{ __html: productDetail?.description || '' }}
-              />
-            </div>
+            <Suspense fallback={<div>Loading...</div>}>
+              <div>
+                <DescriptionContainer
+                  dangerouslySetInnerHTML={{ __html: productDetail?.description || '' }}
+                />
+              </div>
+            </Suspense>
           )}
         </ErrorBoundary>
         <ErrorBoundary customMessage="선물후기를 불러오는 중 오류가 발생했습니다.">
-          {activeTab === 'review' && <ProductReview />}
+          {activeTab === 'review' && (
+            <Suspense fallback={<div>Loading...</div>}>
+              <ProductReview />
+            </Suspense>
+          )}
         </ErrorBoundary>
         <ErrorBoundary customMessage="상세정보를 불러오는 중 오류가 발생했습니다.">
-          {activeTab === 'detail' && <ProductDetailSection />}
+          {activeTab === 'detail' && (
+            <Suspense fallback={<div>Loading...</div>}>
+              <ProductDetailSection />
+            </Suspense>
+          )}
         </ErrorBoundary>
       </TabContent>
 
