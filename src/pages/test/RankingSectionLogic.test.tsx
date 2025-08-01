@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router';
@@ -8,6 +8,9 @@ import { RankingSection } from '@/components/RankingSection/RankingSection';
 import { server } from '../../test/server';
 import { http, HttpResponse } from 'msw';
 import { Suspense } from 'react';
+
+// API_BASE 환경 변수 설정
+vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:3000');
 
 // Mock dependencies
 const mockSetSearchParams = vi.fn();
@@ -50,10 +53,19 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
 
 // MSW 사용
 describe('RankingSection 컴포넌트 (MSW 사용)', () => {
+  beforeAll(() => {
+    server.listen();
+  });
+
+  afterAll(() => {
+    server.close();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockSetSearchParams.mockClear();
     mockNavigate.mockClear();
+    server.resetHandlers();
 
     // 기본 로그인된 사용자로 설정
     mockUseAuth.mockReturnValue({
@@ -69,6 +81,57 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
   });
 
   it('MSW를 통해 랭킹 데이터를 가져와서 렌더링해야 한다', async () => {
+    // MSW 핸들러를 명시적으로 설정
+    server.use(
+      http.get('/api/products/ranking', () => {
+        return HttpResponse.json({
+          success: true,
+          data: [
+            {
+              id: 1,
+              name: '프리미엄 와인 세트',
+              brandInfo: { id: 1, name: '와인브랜드', imageURL: 'https://example.com/brand1.jpg' },
+              price: {
+                basicPrice: 60000,
+                discountRate: 17,
+                sellingPrice: 50000,
+              },
+              imageURL: 'https://example.com/wine.jpg',
+              wishCount: 150,
+            },
+            {
+              id: 2,
+              name: '고급 초콜릿 박스',
+              brandInfo: {
+                id: 2,
+                name: '초콜릿브랜드',
+                imageURL: 'https://example.com/brand2.jpg',
+              },
+              price: {
+                basicPrice: 40000,
+                discountRate: 25,
+                sellingPrice: 30000,
+              },
+              imageURL: 'https://example.com/chocolate.jpg',
+              wishCount: 120,
+            },
+            {
+              id: 3,
+              name: '프리미엄 화장품 세트',
+              brandInfo: { id: 3, name: '뷰티브랜드', imageURL: 'https://example.com/brand3.jpg' },
+              price: {
+                basicPrice: 100000,
+                discountRate: 20,
+                sellingPrice: 80000,
+              },
+              imageURL: 'https://example.com/cosmetics.jpg',
+              wishCount: 200,
+            },
+          ],
+        });
+      }),
+    );
+
     render(
       <TestWrapper>
         <RankingSection />
@@ -79,9 +142,12 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
     expect(screen.getByText('로딩 중...')).toBeInTheDocument();
 
     // 데이터 로딩 완료 후 제목 확인
-    await waitFor(() => {
-      expect(screen.getByText('실시간 급상승 선물랭킹')).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText('실시간 급상승 선물랭킹')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
 
     // 탭 네비게이션 확인
     expect(screen.getByText('전체')).toBeInTheDocument();
@@ -98,11 +164,14 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
     expect(screen.getByText('더보기')).toBeInTheDocument();
 
     // MSW를 통해 가져온 상품 데이터 확인
-    await waitFor(() => {
-      expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
-      expect(screen.getByText('고급 초콜릿 박스')).toBeInTheDocument();
-      expect(screen.getByText('프리미엄 화장품 세트')).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
+        expect(screen.getByText('고급 초콜릿 박스')).toBeInTheDocument();
+        expect(screen.getByText('프리미엄 화장품 세트')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
   });
 
   it('탭 클릭 시 MSW를 통해 새로운 데이터를 가져와야 한다', async () => {
@@ -165,9 +234,12 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
     );
 
     // 초기 데이터 로딩 완료 대기
-    await waitFor(() => {
-      expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
 
     // 여성이 탭 클릭
     const femaleTab = screen.getByText('여성이');
@@ -184,9 +256,12 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
     );
 
     // 새로운 데이터가 로드되는지 확인
-    await waitFor(() => {
-      expect(screen.getByText('스킨케어 세트')).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText('스킨케어 세트')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
   });
 
   it('필터 클릭 시 MSW를 통해 필터링된 데이터를 가져와야 한다', async () => {
@@ -249,9 +324,12 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
     );
 
     // 초기 데이터 로딩 완료 대기
-    await waitFor(() => {
-      expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
 
     // 많이 선물한 필터 클릭
     const manyReceiveFilter = screen.getByText('많이 선물한');
@@ -268,13 +346,40 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
     );
 
     // 새로운 데이터가 로드되는지 확인
-    await waitFor(() => {
-      expect(screen.getByText('인기 향수')).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText('인기 향수')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
   });
 
   it('더보기 버튼 클릭 시 버튼 텍스트가 변경되어야 한다', async () => {
     const user = userEvent.setup();
+
+    // MSW 핸들러 설정
+    server.use(
+      http.get('/api/products/ranking', () => {
+        return HttpResponse.json({
+          success: true,
+          data: [
+            {
+              id: 1,
+              name: '프리미엄 와인 세트',
+              brandInfo: { id: 1, name: '와인브랜드', imageURL: 'https://example.com/brand1.jpg' },
+              price: {
+                basicPrice: 60000,
+                discountRate: 17,
+                sellingPrice: 50000,
+              },
+              imageURL: 'https://example.com/wine.jpg',
+              wishCount: 150,
+            },
+          ],
+        });
+      }),
+    );
+
     render(
       <TestWrapper>
         <RankingSection />
@@ -282,9 +387,12 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
     );
 
     // 데이터 로딩 완료 대기
-    await waitFor(() => {
-      expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
 
     // 더보기 버튼 클릭
     const moreButton = screen.getByText('더보기');
@@ -307,6 +415,30 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
 
   it('상품 클릭 시 상품 상세 페이지로 이동해야 한다', async () => {
     const user = userEvent.setup();
+
+    // MSW 핸들러 설정
+    server.use(
+      http.get('/api/products/ranking', () => {
+        return HttpResponse.json({
+          success: true,
+          data: [
+            {
+              id: 1,
+              name: '프리미엄 와인 세트',
+              brandInfo: { id: 1, name: '와인브랜드', imageURL: 'https://example.com/brand1.jpg' },
+              price: {
+                basicPrice: 60000,
+                discountRate: 17,
+                sellingPrice: 50000,
+              },
+              imageURL: 'https://example.com/wine.jpg',
+              wishCount: 150,
+            },
+          ],
+        });
+      }),
+    );
+
     render(
       <TestWrapper>
         <RankingSection />
@@ -314,9 +446,12 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
     );
 
     // 상품이 로드될 때까지 대기
-    await waitFor(() => {
-      expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
 
     // 상품 클릭
     const product = screen.getByText('프리미엄 와인 세트');
@@ -338,6 +473,30 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
     });
 
     const user = userEvent.setup();
+
+    // MSW 핸들러 설정
+    server.use(
+      http.get('/api/products/ranking', () => {
+        return HttpResponse.json({
+          success: true,
+          data: [
+            {
+              id: 1,
+              name: '프리미엄 와인 세트',
+              brandInfo: { id: 1, name: '와인브랜드', imageURL: 'https://example.com/brand1.jpg' },
+              price: {
+                basicPrice: 60000,
+                discountRate: 17,
+                sellingPrice: 50000,
+              },
+              imageURL: 'https://example.com/wine.jpg',
+              wishCount: 150,
+            },
+          ],
+        });
+      }),
+    );
+
     render(
       <TestWrapper>
         <RankingSection />
@@ -345,9 +504,12 @@ describe('RankingSection 컴포넌트 (MSW 사용)', () => {
     );
 
     // 상품이 로드될 때까지 대기
-    await waitFor(() => {
-      expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(screen.getByText('프리미엄 와인 세트')).toBeInTheDocument();
+      },
+      { timeout: 5000 },
+    );
 
     // 상품 클릭
     const product = screen.getByText('프리미엄 와인 세트');
