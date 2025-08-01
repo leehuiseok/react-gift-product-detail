@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router';
@@ -8,9 +8,6 @@ import { RankingSection } from '@/components/RankingSection/RankingSection';
 import { server } from '../../test/server';
 import { http, HttpResponse } from 'msw';
 import { Suspense } from 'react';
-
-// API_BASE 환경 변수 설정
-vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:3000');
 
 // Mock dependencies
 const mockSetSearchParams = vi.fn();
@@ -53,19 +50,14 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
 
 // MSW 사용
 describe('RankingSection 컴포넌트 (MSW 사용)', () => {
-  beforeAll(() => {
-    server.listen();
-  });
-
-  afterAll(() => {
-    server.close();
-  });
-
   beforeEach(() => {
     vi.clearAllMocks();
     mockSetSearchParams.mockClear();
     mockNavigate.mockClear();
     server.resetHandlers();
+
+    // API_BASE 환경 변수 설정
+    vi.stubEnv('VITE_API_BASE_URL', 'http://localhost:3000');
 
     // 기본 로그인된 사용자로 설정
     mockUseAuth.mockReturnValue({
