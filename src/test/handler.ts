@@ -105,7 +105,7 @@ const mockRankingData: Record<string, Record<string, Product[]>> = {
 
 export const handlers = [
   // 랭킹 데이터 API - 전체 URL 패턴
-  http.get('*/api/products/ranking', ({ request }) => {
+  http.get('http://localhost:3000/api/products/ranking', ({ request }) => {
     const url = new URL(request.url);
     const targetType = url.searchParams.get('targetType') || 'ALL';
     const rankType = url.searchParams.get('rankType') || 'MANY_WISH';
