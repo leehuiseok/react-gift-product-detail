@@ -4,12 +4,12 @@ import styled from '@emotion/styled';
 import { useParams, useNavigate } from 'react-router';
 import { Header } from '@/components/Header/Header';
 import { ProductActionBar } from '@/components/ProductActionBar/ProductActionBar';
-import { useProductDetail } from '@/hooks/useProductDetail';
 import { Product } from '@/components/common/Product';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { ProductReview } from '@/components/ProductTab/ProductReview/ProductReview';
 import { Suspense } from 'react';
 import { ProductDetailSection } from '@/components/ProductTab/ProductDetailSection/ProductDetailSection';
+import { Description } from '@/components/DescriptionContainer/DescriptionContainer';
 
 const Container = styled.div`
   max-width: 720px;
@@ -38,38 +38,10 @@ const TabContent = styled.div`
   padding: 20px;
 `;
 
-const DescriptionContainer = styled.div`
-  line-height: 1.6;
-  p {
-    margin-bottom: 15px;
-    font-size: 14px;
-    color: #333;
-  }
-
-  img {
-    width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin: 10px 0;
-  }
-
-  p[style*='text-align: center'] {
-    text-align: center;
-  }
-
-  p[style*='text-align: center'] img {
-    display: inline-block;
-    margin: 5px;
-    max-width: 100%;
-  }
-`;
-
 export const ProductDetail = () => {
   const { productId } = useParams();
   const [activeTab, setActiveTab] = useState<'description' | 'review' | 'detail'>('description');
   const navigate = useNavigate();
-
-  const { data: productDetail } = useProductDetail(productId || '');
 
   const handleOrderClick = () => {
     navigate(`/order?productId=${productId}`);
@@ -103,9 +75,7 @@ export const ProductDetail = () => {
           {activeTab === 'description' && (
             <Suspense fallback={<div>Loading...</div>}>
               <div>
-                <DescriptionContainer
-                  dangerouslySetInnerHTML={{ __html: productDetail?.description || '' }}
-                />
+                <Description />
               </div>
             </Suspense>
           )}
