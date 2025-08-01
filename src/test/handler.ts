@@ -16,7 +16,7 @@ type Product = {
 };
 
 // Mock 데이터
-const mockRankingData: Record<string, Record<string, Product[]>> = {
+export const mockRankingData: Record<string, Record<string, Product[]>> = {
   ALL: {
     MANY_WISH: [
       {
@@ -56,6 +56,20 @@ const mockRankingData: Record<string, Record<string, Product[]>> = {
         wishCount: 200,
       },
     ],
+    MANY_RECEIVE: [
+      {
+        id: 7,
+        name: '인기 향수',
+        brandInfo: { id: 7, name: '향수브랜드', imageURL: 'https://example.com/brand7.jpg' },
+        price: {
+          basicPrice: 80000,
+          discountRate: 25,
+          sellingPrice: 60000,
+        },
+        imageURL: 'https://example.com/perfume.jpg',
+        reviewCount: 85,
+      },
+    ],
     MANY_REVIEW: [
       {
         id: 4,
@@ -71,7 +85,7 @@ const mockRankingData: Record<string, Record<string, Product[]>> = {
       },
     ],
   },
-  BEAUTY: {
+  FEMALE: {
     MANY_WISH: [
       {
         id: 5,
